@@ -33,7 +33,7 @@ public class CustomAuthenticator implements AuthenticationProvider {
             throw new UsernameNotFoundException("No user with given user name");
         }
 
-        if (passWord.equalsIgnoreCase(userDetails.getPassword())) {
+        if (!passWord.equalsIgnoreCase(userDetails.getPassword())) {
             increaseFailedAttempts(userName);
             throw new BadCredentialsException("Password does not match");
         }
