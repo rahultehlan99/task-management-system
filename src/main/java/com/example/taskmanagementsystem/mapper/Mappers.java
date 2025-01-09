@@ -1,13 +1,16 @@
 package com.example.taskmanagementsystem.mapper;
 
+import com.example.taskmanagementsystem.dto.BulkTaskFetchDTO;
 import com.example.taskmanagementsystem.dto.TaskCreateRequestDTO;
 import com.example.taskmanagementsystem.dto.TaskCreateResponseDTO;
 import com.example.taskmanagementsystem.dto.TaskInfoDTO;
 import com.example.taskmanagementsystem.entity.Tags;
 import com.example.taskmanagementsystem.entity.Tasks;
+import com.example.taskmanagementsystem.entity.Users;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,8 @@ public class Mappers {
         tasks.setTaskDescription(taskCreateRequestDTO.getTaskDescription());
         tasks.setDeadLine(taskCreateRequestDTO.getDeadline());
         tasks.setPriority(taskCreateRequestDTO.getTaskPriority());
+        tasks.setCreatedAt(LocalDateTime.now());
+        tasks.setReminderEnabled(taskCreateRequestDTO.isReminderEnabled());
         return tasks;
     }
 
@@ -43,14 +48,30 @@ public class Mappers {
 
     public static TaskInfoDTO taskEntityToTaskInfoDTO(Tasks tasks){
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+        taskInfoDTO.setTaskId(tasks.getTaskId());
         taskInfoDTO.setTaskName(tasks.getTaskName());
         taskInfoDTO.setTaskDescription(tasks.getTaskDescription());
         taskInfoDTO.setDeadline(tasks.getDeadLine());
         taskInfoDTO.setTaskPriority(tasks.getPriority());
-        taskInfoDTO.setTaskStatus(tasks.getStatus());
+        taskInfoDTO.setTaskStatus(tasks.getStatus().name());
         taskInfoDTO.setTags(tasks.getTags().stream().map(Tags::getTagName).collect(Collectors.toSet()));
         taskInfoDTO.setFiles(tasks.getFiles());
+        taskInfoDTO.setCreatedAt(tasks.getCreatedAt());
+        taskInfoDTO.setReminderEnabled(tasks.isReminderEnabled());
         return taskInfoDTO;
+    }
+
+    public static BulkTaskFetchDTO taskEntityToFilteredTaskInfoDTO(Tasks tasks){
+        BulkTaskFetchDTO bulkTaskFetchDTO = new BulkTaskFetchDTO();
+        bulkTaskFetchDTO.setTaskId(tasks.getTaskId());
+        bulkTaskFetchDTO.setTaskName(tasks.getTaskName());
+        bulkTaskFetchDTO.setTaskDescription(tasks.getTaskDescription());
+        bulkTaskFetchDTO.setDeadline(tasks.getDeadLine());
+        bulkTaskFetchDTO.setTaskPriority(tasks.getPriority());
+        bulkTaskFetchDTO.setTaskStatus(tasks.getStatus().name());
+        bulkTaskFetchDTO.setCreatedAt(tasks.getCreatedAt());
+        bulkTaskFetchDTO.setReminderEnabled(tasks.isReminderEnabled());
+        return bulkTaskFetchDTO;
     }
 
     public static TaskCreateResponseDTO requestToResponseDTO(TaskCreateRequestDTO taskCreateRequestDTO, Tasks createdTask){
