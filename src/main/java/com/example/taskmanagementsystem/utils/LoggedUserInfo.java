@@ -1,2 +1,14 @@
-package com.example.taskmanagementsystem.utils;public class LoggedUserInfo {
+package com.example.taskmanagementsystem.utils;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+
+@Component
+public class LoggedUserInfo {
+
+    public static String getCurrentLoggedInUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
+    }
 }
