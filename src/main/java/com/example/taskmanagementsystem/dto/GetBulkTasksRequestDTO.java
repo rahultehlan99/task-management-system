@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GetTasksRequestDTO {
+public class GetBulkTasksRequestDTO {
     private List<String> status;
     private LocalDateTime deadline;
     private Integer priority;

@@ -1,9 +1,6 @@
 package com.example.taskmanagementsystem.service;
 
-import com.example.taskmanagementsystem.dto.TaskCreateRequestDTO;
-import com.example.taskmanagementsystem.dto.TaskCreateResponseDTO;
-import com.example.taskmanagementsystem.dto.TaskInfoDTO;
-import org.springframework.core.io.ByteArrayResource;
+import com.example.taskmanagementsystem.dto.*;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,11 +12,20 @@ public interface TaskManagementService {
 
     List<TaskInfoDTO> getTask(String taskId);
 
+    List<BulkTaskFetchDTO> getFilteredTasks(GetBulkTasksRequestDTO tasksRequestDTO);
+
     String changeTaskStatus(String taskId, String newStatus);
 
+    String updateTask(String taskid, TaskUpdateRequestDTO taskUpdateRequestDTO);
     String deleteTask(String taskId);
 
     void uploadTaskFiles(String taskId, List<MultipartFile> multipartFiles);
 
-    List<Resource> downloadTaskFiles(String taskId);
+    List<String> getTaskFilesPreSignedUrl(String taskId);
+
+    String addComment(CommentRequestDTO commentRequestDTO);
+
+    List<CommentResponseDTO> getComments(String taskId);
+
+    String revertReminder(String taskId);
 }
