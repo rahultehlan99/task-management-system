@@ -2,6 +2,9 @@ package com.example.taskmanagementsystem.controller;
 
 import com.example.taskmanagementsystem.dto.*;
 import com.example.taskmanagementsystem.service.TaskManagementService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,12 +25,22 @@ public class TaskController {
 
     private final TaskManagementService taskManagementService;
 
+    @Operation(summary = "Add a user task")
+    @ApiResponses(
+            @ApiResponse(responseCode = "201", description = "Task Successfully created")
+    )
     @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TaskCreateResponseDTO> addUserTask(@RequestBody TaskCreateRequestDTO taskCreateRequestDTO) {
         log.info("Request received for new task creation");
         return new ResponseEntity<>(taskManagementService.createNewUserTask(taskCreateRequestDTO), HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Add attachments to a user task")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Attachment added successfully"),
+            @ApiResponse(responseCode = "404", description = "No such task exist")
+    }
+    )
     @PostMapping(value = "/{taskId}/attachments", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> addUserTaskFiles(
             @PathVariable("taskId") String taskId,
@@ -37,6 +50,12 @@ public class TaskController {
         return ResponseEntity.ok("Files uploaded Successfully");
     }
 
+    @Operation(summary = "Get attachments for a user task")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Attachment fetched successfully"),
+            @ApiResponse(responseCode = "404", description = "No such task exist")
+    }
+    )
     @GetMapping(value = "/{taskId}/attachments")
     public ResponseEntity<List<String>> getUserTaskFiles(
             @PathVariable("taskId") String taskId) {
@@ -44,6 +63,10 @@ public class TaskController {
         return ResponseEntity.ok(taskManagementService.getTaskFilesPreSignedUrl(taskId));
     }
 
+    @Operation(summary = "Get tasks via tags")
+    @ApiResponses(
+            @ApiResponse(responseCode = "200", description = "Tasks via tags fetched successfully")
+    )
     @GetMapping(value = "/tags", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<TaskInfoDTO>> getTasksViaTags(
             @RequestParam(value = "tags") List<String> tags,
@@ -52,6 +75,12 @@ public class TaskController {
         return new ResponseEntity<>(taskManagementService.getTasksViaTags(tags, count), HttpStatus.OK);
     }
 
+    @Operation(summary = "Get task via ID or all tasks if not provided")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task(s) fetched successfully"),
+            @ApiResponse(responseCode = "404", description = "No such task exist")
+    }
+    )
     @GetMapping(value = "/task", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<TaskInfoDTO>> getTasks(
             @RequestParam(value = "taskId", required = false) String taskId) {
@@ -59,8 +88,12 @@ public class TaskController {
         return new ResponseEntity<>(taskManagementService.getTask(taskId), HttpStatus.OK);
     }
 
+    @Operation(summary = "Get tasks basis fields")
+    @ApiResponses(
+            @ApiResponse(responseCode = "200", description = "Task(s) fetched successfully")
+    )
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<BulkTaskFetchDTO>> getSpecificTasks(
+    public ResponseEntity<List<TaskInfoDTO>> getSpecificTasks(
             @RequestParam(value = "status", required = false) List<String> status,
             @RequestParam(value = "deadline", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime deadline,
             @RequestParam(value = "priority", required = false) Integer priority) {
@@ -72,6 +105,12 @@ public class TaskController {
                 .build()), HttpStatus.OK);
     }
 
+    @Operation(summary = "Update task status")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task status updated successfully"),
+            @ApiResponse(responseCode = "404", description = "No such task exist")
+    }
+    )
     @PatchMapping(value = "/{taskId}/status/{newStatus}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> markTaskStatusViaTaskId(@PathVariable("taskId") String taskId,
                                                           @PathVariable("newStatus") String newStatus) throws RuntimeException {
@@ -79,19 +118,38 @@ public class TaskController {
         return new ResponseEntity<>(taskManagementService.changeTaskStatus(taskId, newStatus), HttpStatus.OK);
     }
 
+    @Operation(summary = "Task updated")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task updated successfully"),
+            @ApiResponse(responseCode = "404", description = "No such task exist")
+    }
+    )
     @PatchMapping(value = "/{taskId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> updateTask(@PathVariable("taskId") String taskId,
                                              @RequestBody TaskUpdateRequestDTO taskUpdateRequestDTO) {
-        log.info("Request recevied for updating task : {}", taskId);
+        log.info("Request received for updating task : {}", taskId);
         return ResponseEntity.ok(taskManagementService.updateTask(taskId, taskUpdateRequestDTO));
     }
 
+    @Operation(summary = "Task deletion successful")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "No such task exist")
+    }
+    )
     @DeleteMapping(value = "/{taskId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> deleteTask(@PathVariable("taskId") String taskId) throws RuntimeException {
         log.info("Request received for deleting task : {}", taskId);
         return new ResponseEntity<>(taskManagementService.deleteTask(taskId), HttpStatus.OK);
     }
 
+
+    @Operation(summary = "Post task comments")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task comment added"),
+            @ApiResponse(responseCode = "404", description = "No such task exist")
+    }
+    )
     @PostMapping(value = "/{taskId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> commentOnTask(@PathVariable String taskId, @RequestBody CommentRequestDTO commentRequestDTO) {
         log.info("Request received for adding comment : {}", commentRequestDTO);
@@ -99,12 +157,24 @@ public class TaskController {
         return new ResponseEntity<>(taskManagementService.addComment(commentRequestDTO), HttpStatus.OK);
     }
 
+    @Operation(summary = "Get task comments")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task comments fetched"),
+            @ApiResponse(responseCode = "404", description = "No such task exist")
+    }
+    )
     @GetMapping(value = "/{taskId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getTaskComments(@PathVariable("taskId") String taskId) {
         log.info("Request received for getting task comments : {}", taskId);
         return new ResponseEntity<>(taskManagementService.getComments(taskId), HttpStatus.OK);
     }
 
+    @Operation(summary = "Task reminder reverted")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task reminder reverted"),
+            @ApiResponse(responseCode = "404", description = "No such task exist")
+    }
+    )
     @PatchMapping(value = "/{taskId}/reminder/revert", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> revertTaskReminder(@PathVariable("taskId") String taskId) {
         return new ResponseEntity<>(taskManagementService.revertReminder(taskId), HttpStatus.OK);

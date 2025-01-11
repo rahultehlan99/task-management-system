@@ -37,7 +37,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 new AntPathRequestMatcher("/api/v1/users/signUp")
                                 , new AntPathRequestMatcher("/api/v1/users/signIn")
-                                , new AntPathRequestMatcher("/h2-ui/**")).permitAll()
+                                , new AntPathRequestMatcher("/h2-ui/**")
+                                , new AntPathRequestMatcher("/swagger-ui/**")
+                                , new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
                         .anyRequest().authenticated())
                 .headers().frameOptions().disable()
                 .and()

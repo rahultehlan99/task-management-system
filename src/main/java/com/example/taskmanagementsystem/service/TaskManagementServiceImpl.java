@@ -60,6 +60,12 @@ public class TaskManagementServiceImpl implements TaskManagementService {
                 new UsernameNotFoundException("User does exist"));
     }
 
+    private Tasks getTaskById(String taskId) {
+        return tasksRepository.findTaskByTaskId(taskId).orElseThrow(() ->
+                new NoSuchElementException(String.format("No task with given id : %s", taskId))
+        );
+    }
+
     @Override
     public void uploadTaskFiles(String taskId, List<MultipartFile> multipartFiles) {
 //        for(MultipartFile multipartFile: multipartFiles) {
@@ -67,14 +73,10 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 //                throw new RuntimeException("File size too large");
 //            }
 //        }
-        Optional<Tasks> optionalTasks = tasksRepository.findTaskByTaskId(taskId);
-        if (!optionalTasks.isPresent()) {
-            throw new RuntimeException(String.format("No task with given id : %s", taskId));
-        }
+        Tasks task = getTaskById(taskId);
         FileStoreService fileStore = fileStoreServiceFactory.getFileStoreService(uploadLocation);
         List<String> uploadFileNames = fileStore.upload(multipartFiles);
         log.info("Files uploaded {}", uploadFileNames);
-        Tasks task = optionalTasks.get();
         uploadFileNames.forEach(task::addFileToTask);
         tasksRepository.save(task);
         log.info("Saved task with images : {}", taskId);
@@ -82,12 +84,9 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
     @Override
     public List<String> getTaskFilesPreSignedUrl(String taskId) {
-        Optional<Tasks> optionalTasks = tasksRepository.findTaskByTaskId(taskId);
-        if (!optionalTasks.isPresent()) {
-            throw new RuntimeException(String.format("No task with given id : %s", taskId));
-        }
+        Tasks task = getTaskById(taskId);
         FileStoreService fileStore = fileStoreServiceFactory.getFileStoreService(uploadLocation);
-        return fileStore.getObjectPreSignedUrl(optionalTasks.get().getFiles());
+        return fileStore.getObjectPreSignedUrl(task.getFiles());
     }
 
     @Override
@@ -114,17 +113,14 @@ public class TaskManagementServiceImpl implements TaskManagementService {
             return tasksInfoList;
         }
         long startTime = System.currentTimeMillis();
-        Optional<Tasks> optionalTasks = tasksRepository.findTaskByTaskId(taskId);
-        if (!optionalTasks.isPresent()) {
-            throw new RuntimeException(String.format("No task with given id : %s", taskId));
-        }
+        Tasks task = getTaskById(taskId);
         log.info("Time taken is : {}", System.currentTimeMillis() - startTime);
-        return Collections.singletonList(Mappers.taskEntityToTaskInfoDTO(optionalTasks.get()));
+        return Collections.singletonList(Mappers.taskEntityToTaskInfoDTO(task));
     }
 
     @Override
-    public List<BulkTaskFetchDTO> getFilteredTasks(GetBulkTasksRequestDTO tasksRequestDTO) {
-        StringBuilder query = new StringBuilder("Select * from tasks t where 1=1");
+    public List<TaskInfoDTO> getFilteredTasks(GetBulkTasksRequestDTO tasksRequestDTO) {
+        StringBuilder query = new StringBuilder("Select * from tasks t where 1=1 ");
         if (tasksRequestDTO.getDeadline() != null) {
             query.append(String.format(" AND dead_Line <= %s", "'" + tasksRequestDTO.getDeadline()) + "'");
         }
@@ -140,7 +136,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
     @Override
     public List<CommentResponseDTO> getComments(String taskId) {
-        Tasks tasks = tasksRepository.findTaskByTaskId(taskId).orElseThrow(() -> new RuntimeException("No task with given taskId"));
+        Tasks tasks = getTaskById(taskId);
         List<CommentResponseDTO> commentResponseDTOS = new ArrayList<>();
         tasks.getComments().forEach(comment -> {
             CommentResponseDTO commentResponseDTO = new CommentResponseDTO();
@@ -156,8 +152,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     public String changeTaskStatus(String taskId, String newStatus) {
         log.info("Request received for changing task status for {} to {}", taskId, newStatus);
         if (TaskStatus.checkIfExists(newStatus)) {
-            Tasks updatedTask = tasksRepository.findTaskByTaskId(taskId)
-                    .orElseThrow(() -> new RuntimeException(String.format("No task with given id : %s", taskId)));
+            Tasks updatedTask = getTaskById(taskId);
             updatedTask.setStatus(TaskStatus.valueOf(newStatus));
             tasksRepository.save(updatedTask);
             return String.format("OK, task status for %s changed to %s", updatedTask.getTaskName(), newStatus);
@@ -169,8 +164,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
     @Override
     public String updateTask(String taskId, TaskUpdateRequestDTO taskUpdateRequestDTO) {
-        Tasks task = tasksRepository.findTaskByTaskId(taskId)
-                .orElseThrow(() -> new RuntimeException(String.format("No task with given id : %s", taskId)));
+        Tasks task = getTaskById(taskId);
         if (taskUpdateRequestDTO.getTaskName() != null)
             task.setTaskName(taskUpdateRequestDTO.getTaskName());
         if (taskUpdateRequestDTO.getTaskDescription() != null)
@@ -185,7 +179,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
     @Override
     public String addComment(CommentRequestDTO commentRequestDTO) {
-        Tasks tasks = tasksRepository.findTaskByTaskId(commentRequestDTO.getTaskId()).orElseThrow(() -> new RuntimeException("No task with given taskId"));
+        Tasks tasks = getTaskById(commentRequestDTO.getTaskId());
         Comment comment = new Comment();
         comment.setCommentDescription(commentRequestDTO.getDescription());
         comment.setUserId(LoggedUserInfo.getCurrentLoggedInUser());
@@ -196,7 +190,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
     @Override
     public String revertReminder(String taskId) {
-        Tasks task = tasksRepository.findTaskByTaskId(taskId).orElseThrow(() -> new RuntimeException("No task with given taskId"));
+        Tasks task = getTaskById(taskId);
         task.setReminderEnabled(!task.isReminderEnabled());
         tasksRepository.save(task);
         return String.format("OK, reminder is %s now", task.isReminderEnabled());
@@ -206,8 +200,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     @CacheEvict(cacheNames = "taskInfo", key = "#taskId")
     public String deleteTask(String taskId) {
         log.info("Request received for deleting task {}", taskId);
-        Tasks task = tasksRepository.findTaskByTaskId(taskId)
-                .orElseThrow(() -> new RuntimeException(String.format("No task with given id : %s", taskId)));
+        Tasks task = getTaskById(taskId);
         tasksRepository.delete(task);
         return String.format("OK, task deleted : %s", taskId);
     }

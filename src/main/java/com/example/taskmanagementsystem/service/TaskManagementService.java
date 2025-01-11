@@ -1,7 +1,6 @@
 package com.example.taskmanagementsystem.service;
 
 import com.example.taskmanagementsystem.dto.*;
-import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -12,7 +11,7 @@ public interface TaskManagementService {
 
     List<TaskInfoDTO> getTask(String taskId);
 
-    List<BulkTaskFetchDTO> getFilteredTasks(GetBulkTasksRequestDTO tasksRequestDTO);
+    List<TaskInfoDTO> getFilteredTasks(GetBulkTasksRequestDTO tasksRequestDTO);
 
     String changeTaskStatus(String taskId, String newStatus);
 

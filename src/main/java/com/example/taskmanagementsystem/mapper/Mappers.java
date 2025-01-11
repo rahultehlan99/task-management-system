@@ -1,12 +1,10 @@
 package com.example.taskmanagementsystem.mapper;
 
-import com.example.taskmanagementsystem.dto.BulkTaskFetchDTO;
 import com.example.taskmanagementsystem.dto.TaskCreateRequestDTO;
 import com.example.taskmanagementsystem.dto.TaskCreateResponseDTO;
 import com.example.taskmanagementsystem.dto.TaskInfoDTO;
 import com.example.taskmanagementsystem.entity.Tags;
 import com.example.taskmanagementsystem.entity.Tasks;
-import com.example.taskmanagementsystem.entity.Users;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -61,17 +59,17 @@ public class Mappers {
         return taskInfoDTO;
     }
 
-    public static BulkTaskFetchDTO taskEntityToFilteredTaskInfoDTO(Tasks tasks){
-        BulkTaskFetchDTO bulkTaskFetchDTO = new BulkTaskFetchDTO();
-        bulkTaskFetchDTO.setTaskId(tasks.getTaskId());
-        bulkTaskFetchDTO.setTaskName(tasks.getTaskName());
-        bulkTaskFetchDTO.setTaskDescription(tasks.getTaskDescription());
-        bulkTaskFetchDTO.setDeadline(tasks.getDeadLine());
-        bulkTaskFetchDTO.setTaskPriority(tasks.getPriority());
-        bulkTaskFetchDTO.setTaskStatus(tasks.getStatus().name());
-        bulkTaskFetchDTO.setCreatedAt(tasks.getCreatedAt());
-        bulkTaskFetchDTO.setReminderEnabled(tasks.isReminderEnabled());
-        return bulkTaskFetchDTO;
+    public static TaskInfoDTO taskEntityToFilteredTaskInfoDTO(Tasks tasks){
+        TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+        taskInfoDTO.setTaskId(tasks.getTaskId());
+        taskInfoDTO.setTaskName(tasks.getTaskName());
+        taskInfoDTO.setTaskDescription(tasks.getTaskDescription());
+        taskInfoDTO.setDeadline(tasks.getDeadLine());
+        taskInfoDTO.setTaskPriority(tasks.getPriority());
+        taskInfoDTO.setTaskStatus(tasks.getStatus().name());
+        taskInfoDTO.setCreatedAt(tasks.getCreatedAt());
+        taskInfoDTO.setReminderEnabled(tasks.isReminderEnabled());
+        return taskInfoDTO;
     }
 
     public static TaskCreateResponseDTO requestToResponseDTO(TaskCreateRequestDTO taskCreateRequestDTO, Tasks createdTask){
