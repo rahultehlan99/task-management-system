@@ -19,9 +19,9 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,8 +56,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
     private Users userForNewTask() {
         String loggedInUser = LoggedUserInfo.getCurrentLoggedInUser();
-        return usersRepository.findByUserName(loggedInUser).orElseThrow(() ->
-                new UsernameNotFoundException("User does exist"));
+        return usersRepository.findByUserName(loggedInUser);
     }
 
     private Tasks getTaskById(String taskId) {
@@ -66,11 +65,6 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
     @Override
     public void uploadTaskFiles(String taskId, List<MultipartFile> multipartFiles) {
-//        for(MultipartFile multipartFile: multipartFiles) {
-//            if(multipartFile.getSize() > 1000){
-//                throw new RuntimeException("File size too large");
-//            }
-//        }
         Tasks task = getTaskById(taskId);
         FileStoreService fileStore = fileStoreServiceFactory.getFileStoreService(uploadLocation);
         List<String> uploadFileNames = fileStore.upload(multipartFiles);
@@ -98,14 +92,15 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     }
 
     @Override
-    @Cacheable(cacheNames = "taskInfo", key = "#taskId")
-    public List<TaskInfoDTO> getTask(String taskId) {
+    @Cacheable(cacheNames = "taskInfo", key = "#taskId", condition = "#taskId!=null")
+    public List<TaskInfoDTO> getTasks(String taskId, int pageNo, int pageSize, String sortBy, String sortingDirection) {
         String loggedUser = LoggedUserInfo.getCurrentLoggedInUser();
         log.info("Getting task info via id : {} for user : {}", taskId, loggedUser);
         if (StringUtils.isBlank(taskId)) {
             List<TaskInfoDTO> tasksInfoList = new ArrayList<>();
-            long userId = usersRepository.findByUserName(loggedUser).get().getUserId();
-            tasksRepository.findAllTasksOrderByUpdatedAtDesc(userId).forEach(task -> {
+            Sort sort = Sort.by(Sort.Direction.fromString(sortingDirection), sortBy);
+            long userId = usersRepository.findByUserName(loggedUser).getUserId();
+            tasksRepository.findAllTasksOrderByUpdatedAtDesc(userId, PageRequest.of(pageNo, pageSize, sort)).forEach(task -> {
                 tasksInfoList.add(Mappers.taskEntityToTaskInfoDTO(task));
             });
             return tasksInfoList;

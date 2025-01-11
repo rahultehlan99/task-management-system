@@ -7,7 +7,6 @@ import com.example.taskmanagementsystem.exceptions.UserAlreadyExistsException;
 import com.example.taskmanagementsystem.repository.RoleRepository;
 import com.example.taskmanagementsystem.repository.UsersRepository;
 import com.example.taskmanagementsystem.utils.JwtUtil;
-import io.jsonwebtoken.Claims;
 import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -59,8 +61,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public String signUpUser(@NonNull String userName, @NonNull String password) {
         log.info("Checking user : {}", userName);
-        Optional<Users> checkUser = usersRepository.findByUserName(userName);
-        if (checkUser.isPresent()) {
+        Users checkUser = usersRepository.findByUserName(userName);
+        if (checkUser != null) {
             log.info("User already exists with given username");
             throw new UserAlreadyExistsException("User already exists", userName);
         }
@@ -76,10 +78,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public HttpHeaders signInUser(String userName, String password) {
+    public HttpHeaders logInUser(String userName, String password) {
         // generate and pass JWT token to the user
-        Users user = usersRepository.findByUserName(userName).orElseThrow(() ->
-                new UsernameNotFoundException("User does not exist"));
+        Users user = usersRepository.findByUserName(userName);
+        if (user == null) {
+            throw new UsernameNotFoundException("User does not exist");
+        }
         HttpHeaders httpHeaders = new HttpHeaders();
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getUserId());
@@ -88,8 +92,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String signOutUser(String userName, String password) {
+    public String logOutUser(String jwtToken) {
         // invalidate the JWT token passed in request
+        // 1. keep token expiration time shorter
+        // 2. use cache to mark token as expired and check in cache on each request
         return null;
     }
 }

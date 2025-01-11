@@ -6,12 +6,15 @@ import com.example.taskmanagementsystem.service.TaskManagementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping(value = "/api/v1/tasks")
 @RequiredArgsConstructor
@@ -78,25 +82,28 @@ public class TaskController {
         return new ResponseEntity<>(taskManagementService.getTasksViaTags(tags, count), HttpStatus.OK);
     }
 
-    @TaskExists
-    @Operation(summary = "Get task via ID or all tasks if not provided")
+    @Operation(summary = "Get task via ID or all tasks if empty, pagination applied with pageNo and pageSize sorted by parameters")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task(s) fetched successfully"),
             @ApiResponse(responseCode = "404", description = "No such task exist")
     }
     )
-    @GetMapping(value = "/task", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<TaskInfoDTO>> getTasks(
-            @RequestParam(value = "taskId", required = false) String taskId) {
+            @RequestParam(value = "taskId", required = false) String taskId,
+            @Min(0) @RequestParam(value = "pageNo", defaultValue = "0", required = false) Integer pageNo,
+            @Min(1) @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize,
+            @Pattern(regexp = "deadLine|createdAt|updatedAt", message = "Must be one of deadLine, createdAt, updatedAt") @RequestParam(value = "sortBy", defaultValue = "deadLine", required = false) String sortBy,
+            @RequestParam(value = "sortDir", defaultValue = "DESC", required = false) String sortingDirection) {
         log.info("Request received for task : {}", taskId);
-        return new ResponseEntity<>(taskManagementService.getTask(taskId), HttpStatus.OK);
+        return new ResponseEntity<>(taskManagementService.getTasks(taskId, pageNo, pageSize, sortBy, sortingDirection), HttpStatus.OK);
     }
 
     @Operation(summary = "Get tasks basis fields")
     @ApiResponses(
             @ApiResponse(responseCode = "200", description = "Task(s) fetched successfully")
     )
-    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/filter", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<TaskInfoDTO>> getSpecificTasks(
             @RequestParam(value = "status", required = false) List<String> status,
             @RequestParam(value = "deadline", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime deadline,
@@ -151,7 +158,7 @@ public class TaskController {
     }
 
     @TaskExists
-    @Operation(summary = "Post task comments")
+    @Operation(summary = "Post task comment")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task comment added"),
             @ApiResponse(responseCode = "404", description = "No such task exist")

@@ -9,7 +9,7 @@ public interface TaskManagementService {
     TaskCreateResponseDTO createNewUserTask(TaskCreateRequestDTO taskCreateRequestDTO);
     List<TaskInfoDTO> getTasksViaTags(List<String> tags, int count);
 
-    List<TaskInfoDTO> getTask(String taskId);
+    List<TaskInfoDTO> getTasks(String taskId, int pageNo, int pageSize, String sortBy, String sortingDirection);
 
     List<TaskInfoDTO> getFilteredTasks(GetBulkTasksRequestDTO tasksRequestDTO);
 

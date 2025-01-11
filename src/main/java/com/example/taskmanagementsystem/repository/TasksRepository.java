@@ -20,8 +20,8 @@ public interface TasksRepository extends JpaRepository<Tasks, String> {
             " JOIN TAGS tags on tt.TAGS_ID = tags.TAG_ID where tags.TAG_NAME in :tags", nativeQuery = true)
     List<Tasks> findAllByTags(@Param(value = "tags") List<String> tags, Pageable pageable);
 
-    @Query(value = "Select t.* from TASKS t JOIN USERS u ON t.users_id = u.userId where u.userId =:userId", nativeQuery = true)
-    List<Tasks> findAllTasksOrderByUpdatedAtDesc(@Param("userId") long userId);
+    @Query(value = "Select t.* from TASKS t JOIN USERS u ON t.users_id = u.userId and u.userId =:userId", nativeQuery = true)
+    List<Tasks> findAllTasksOrderByUpdatedAtDesc(@Param("userId") long userId, Pageable pageable);
 
     @Query(value = "Select t.* from TASKS t where t.status in (:statuses) and t.dead_Line < :deadline and t.reminder_Enabled = true", nativeQuery = true)
     List<Tasks> findTasksByStatusAndDeadLine(@Param("statuses") List<String> taskStatusList,@Param("deadline") LocalDateTime date);

@@ -13,10 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -47,7 +44,7 @@ public class UserController {
     @PostMapping(value = "/signIn", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> userLogin(@Validated @RequestBody UserSignUpDTO userSignUpDTO){
         log.info("Request received for new user registration");
-        HttpHeaders httpHeaders = userService.signInUser(userSignUpDTO.getUserName(), userSignUpDTO.getPassword());
+        HttpHeaders httpHeaders = userService.logInUser(userSignUpDTO.getUserName(), userSignUpDTO.getPassword());
         return new ResponseEntity<>("Sign In Successful", httpHeaders, HttpStatus.OK);
     }
 
@@ -56,8 +53,8 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User sign out successful")
     )
     @PostMapping(value = "/signOut", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> userLogout(@Validated @RequestBody UserSignUpDTO userSignUpDTO){
+    public ResponseEntity<Object> userLogout(@RequestHeader(value = "Authorization") String jwtToken){
         log.info("Request received for new user registration");
-        return ResponseEntity.ok(userService.signOutUser(userSignUpDTO.getUserName(), userSignUpDTO.getPassword()));
+        return ResponseEntity.ok(userService.logOutUser(jwtToken));
     }
 }
