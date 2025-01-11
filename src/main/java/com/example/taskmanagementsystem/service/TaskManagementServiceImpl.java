@@ -186,6 +186,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         Comment comment = new Comment();
         comment.setCommentDescription(commentRequestDTO.getDescription());
         comment.setUserId(LoggedUserInfo.getCurrentLoggedInUser());
+        comment.setTaskId(tasks);
         tasks.addComment(comment);
         tasksRepository.save(tasks);
         return "OK, comment added";

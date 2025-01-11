@@ -40,8 +40,7 @@ public class Tasks extends AuditModel {
 
     private boolean reminderEnabled;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "taskId", referencedColumnName = "taskId")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "taskId", cascade = CascadeType.ALL)
     private List<Comment> comments = new ArrayList<>();
 
     public void addComment(Comment comment) {

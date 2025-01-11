@@ -1,8 +1,6 @@
 package com.example.taskmanagementsystem.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,7 +11,7 @@ import org.hibernate.annotations.UuidGenerator;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "`COMMENT`")
+@Table(name = "COMMENT")
 public class Comment extends AuditModel {
 
     @Id
@@ -24,5 +22,7 @@ public class Comment extends AuditModel {
 
     private String userId;
 
-    private String taskId;
+    @ManyToOne
+    @JoinColumn(name = "taskId", referencedColumnName = "taskId")
+    private Tasks taskId;
 }

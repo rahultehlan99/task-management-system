@@ -38,24 +38,28 @@ public class UserServiceImpl implements UserService {
 
     @PostConstruct
     public void init() {
-        roleRepository.saveAll(Arrays.asList(
-                Role.builder()
-                        .userRoles(USER_ROLES.ROLE_ADMIN)
-                        .build(),
-                Role.builder()
-                        .userRoles(USER_ROLES.ROLE_USER)
-                        .build()));
-        Users users = new Users();
-        users.setUserName("Rahul Tehlan");
-        users.setPassword(defaultUserPassword);
-        users.setMailId("rahul@gmail.com");
-        users.setSignUpTime(LocalDateTime.now());
-        users.setRoles(new HashSet<>());
-        users.getRoles().add(roleRepository.findById(USER_ROLES.ROLE_ADMIN).orElse(Role.builder()
-                .userRoles(USER_ROLES.ROLE_USER)
-                .build()));
-        usersRepository.save(users);
-        log.info("Root user created!!\uD83D\uDE00");
+        if(usersRepository.findByUserName("Rahul Tehlan") == null) {
+            roleRepository.saveAll(Arrays.asList(
+                    Role.builder()
+                            .userRoles(USER_ROLES.ROLE_ADMIN)
+                            .build(),
+                    Role.builder()
+                            .userRoles(USER_ROLES.ROLE_USER)
+                            .build()));
+            Users users = new Users();
+            users.setUserName("Rahul Tehlan");
+            users.setPassword(defaultUserPassword);
+            users.setMailId("rahul@gmail.com");
+            users.setSignUpTime(LocalDateTime.now());
+            users.setRoles(new HashSet<>());
+            users.getRoles().add(roleRepository.findById(USER_ROLES.ROLE_ADMIN).orElse(Role.builder()
+                    .userRoles(USER_ROLES.ROLE_USER)
+                    .build()));
+            usersRepository.save(users);
+            log.info("Root user created!!\uD83D\uDE00");
+        } else {
+            log.info("Root user already exists");
+        }
     }
 
     @Override
