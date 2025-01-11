@@ -1,5 +1,6 @@
 package com.example.taskmanagementsystem.controller;
 
+import com.example.taskmanagementsystem.annotations.TaskExists;
 import com.example.taskmanagementsystem.dto.*;
 import com.example.taskmanagementsystem.service.TaskManagementService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +36,7 @@ public class TaskController {
         return new ResponseEntity<>(taskManagementService.createNewUserTask(taskCreateRequestDTO), HttpStatus.CREATED);
     }
 
+    @TaskExists
     @Operation(summary = "Add attachments to a user task")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Attachment added successfully"),
@@ -50,6 +52,7 @@ public class TaskController {
         return ResponseEntity.ok("Files uploaded Successfully");
     }
 
+    @TaskExists
     @Operation(summary = "Get attachments for a user task")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Attachment fetched successfully"),
@@ -75,6 +78,7 @@ public class TaskController {
         return new ResponseEntity<>(taskManagementService.getTasksViaTags(tags, count), HttpStatus.OK);
     }
 
+    @TaskExists
     @Operation(summary = "Get task via ID or all tasks if not provided")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task(s) fetched successfully"),
@@ -105,6 +109,7 @@ public class TaskController {
                 .build()), HttpStatus.OK);
     }
 
+    @TaskExists
     @Operation(summary = "Update task status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task status updated successfully"),
@@ -118,6 +123,7 @@ public class TaskController {
         return new ResponseEntity<>(taskManagementService.changeTaskStatus(taskId, newStatus), HttpStatus.OK);
     }
 
+    @TaskExists
     @Operation(summary = "Task updated")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task updated successfully"),
@@ -131,6 +137,7 @@ public class TaskController {
         return ResponseEntity.ok(taskManagementService.updateTask(taskId, taskUpdateRequestDTO));
     }
 
+    @TaskExists
     @Operation(summary = "Task deletion successful")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task deleted successfully"),
@@ -143,7 +150,7 @@ public class TaskController {
         return new ResponseEntity<>(taskManagementService.deleteTask(taskId), HttpStatus.OK);
     }
 
-
+    @TaskExists
     @Operation(summary = "Post task comments")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task comment added"),
@@ -151,24 +158,26 @@ public class TaskController {
     }
     )
     @PostMapping(value = "/{taskId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> commentOnTask(@PathVariable String taskId, @RequestBody CommentRequestDTO commentRequestDTO) {
+    public ResponseEntity<String> commentOnTask(@PathVariable String taskId, @RequestBody CommentRequestDTO commentRequestDTO) {
         log.info("Request received for adding comment : {}", commentRequestDTO);
         commentRequestDTO.setTaskId(taskId);
         return new ResponseEntity<>(taskManagementService.addComment(commentRequestDTO), HttpStatus.OK);
     }
 
+    @TaskExists
     @Operation(summary = "Get task comments")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task comments fetched"),
             @ApiResponse(responseCode = "404", description = "No such task exist")
     }
     )
-    @GetMapping(value = "/{taskId}/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getTaskComments(@PathVariable("taskId") String taskId) {
+    @GetMapping(value = "/{taskId}/comments", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<CommentResponseDTO>> getTaskComments(@PathVariable("taskId") String taskId) {
         log.info("Request received for getting task comments : {}", taskId);
         return new ResponseEntity<>(taskManagementService.getComments(taskId), HttpStatus.OK);
     }
 
+    @TaskExists
     @Operation(summary = "Task reminder reverted")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Task reminder reverted"),
@@ -176,7 +185,7 @@ public class TaskController {
     }
     )
     @PatchMapping(value = "/{taskId}/reminder/revert", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> revertTaskReminder(@PathVariable("taskId") String taskId) {
+    public ResponseEntity<String> revertTaskReminder(@PathVariable("taskId") String taskId) {
         return new ResponseEntity<>(taskManagementService.revertReminder(taskId), HttpStatus.OK);
     }
 }

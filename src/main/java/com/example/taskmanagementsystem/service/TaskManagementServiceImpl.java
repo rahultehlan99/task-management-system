@@ -61,9 +61,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     }
 
     private Tasks getTaskById(String taskId) {
-        return tasksRepository.findTaskByTaskId(taskId).orElseThrow(() ->
-                new NoSuchElementException(String.format("No task with given id : %s", taskId))
-        );
+        return tasksRepository.findTaskByTaskId(taskId);
     }
 
     @Override
