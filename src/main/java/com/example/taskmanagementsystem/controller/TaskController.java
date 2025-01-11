@@ -89,12 +89,12 @@ public class TaskController {
     }
     )
     @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<TaskInfoDTO>> getTasks(
+    public ResponseEntity<PaginatedResponse<TaskInfoDTO>> getTasks(
             @RequestParam(value = "taskId", required = false) String taskId,
             @Min(0) @RequestParam(value = "pageNo", defaultValue = "0", required = false) Integer pageNo,
             @Min(1) @RequestParam(value = "pageSize", defaultValue = "10", required = false) Integer pageSize,
             @Pattern(regexp = "deadLine|createdAt|updatedAt", message = "Must be one of deadLine, createdAt, updatedAt") @RequestParam(value = "sortBy", defaultValue = "deadLine", required = false) String sortBy,
-            @RequestParam(value = "sortDir", defaultValue = "DESC", required = false) String sortingDirection) {
+            @Pattern(regexp = "ASC|DESC", message = "Must be one of ASC or DESC") @RequestParam(value = "sortDir", defaultValue = "DESC", required = false) String sortingDirection) {
         log.info("Request received for task : {}", taskId);
         return new ResponseEntity<>(taskManagementService.getTasks(taskId, pageNo, pageSize, sortBy, sortingDirection), HttpStatus.OK);
     }

@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -93,22 +94,31 @@ public class TaskManagementServiceImpl implements TaskManagementService {
 
     @Override
     @Cacheable(cacheNames = "taskInfo", key = "#taskId", condition = "#taskId!=null")
-    public List<TaskInfoDTO> getTasks(String taskId, int pageNo, int pageSize, String sortBy, String sortingDirection) {
+    public PaginatedResponse<TaskInfoDTO> getTasks(String taskId, int pageNo, int pageSize, String sortBy, String sortingDirection) {
         String loggedUser = LoggedUserInfo.getCurrentLoggedInUser();
         log.info("Getting task info via id : {} for user : {}", taskId, loggedUser);
         if (StringUtils.isBlank(taskId)) {
             List<TaskInfoDTO> tasksInfoList = new ArrayList<>();
             Sort sort = Sort.by(Sort.Direction.fromString(sortingDirection), sortBy);
             long userId = usersRepository.findByUserName(loggedUser).getUserId();
-            tasksRepository.findAllTasksOrderByUpdatedAtDesc(userId, PageRequest.of(pageNo, pageSize, sort)).forEach(task -> {
+            Page<Tasks> taskPages = tasksRepository.findAllTasksOrderByUpdatedAtDesc(userId, PageRequest.of(pageNo, pageSize, sort));
+            taskPages.forEach(task -> {
                 tasksInfoList.add(Mappers.taskEntityToTaskInfoDTO(task));
             });
-            return tasksInfoList;
+            return PaginatedResponse.<TaskInfoDTO>builder()
+                    .data(tasksInfoList)
+                    .pageNumber(taskPages.getNumber() + 1)
+                    .totalItems(taskPages.getTotalElements())
+                    .totalPages(taskPages.getTotalPages())
+                    .build();
         }
         long startTime = System.currentTimeMillis();
         Tasks task = getTaskById(taskId);
         log.info("Time taken is : {}", System.currentTimeMillis() - startTime);
-        return Collections.singletonList(Mappers.taskEntityToTaskInfoDTO(task));
+        List<TaskInfoDTO> infoDTOS = Collections.singletonList(Mappers.taskEntityToTaskInfoDTO(task));
+        return PaginatedResponse.<TaskInfoDTO>builder()
+                .data(infoDTOS)
+                .build();
     }
 
     @Override

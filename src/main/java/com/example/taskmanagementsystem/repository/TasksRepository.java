@@ -2,6 +2,7 @@ package com.example.taskmanagementsystem.repository;
 
 import com.example.taskmanagementsystem.entity.Tasks;
 import com.example.taskmanagementsystem.enums.TaskStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,7 +22,7 @@ public interface TasksRepository extends JpaRepository<Tasks, String> {
     List<Tasks> findAllByTags(@Param(value = "tags") List<String> tags, Pageable pageable);
 
     @Query(value = "Select t.* from TASKS t JOIN USERS u ON t.users_id = u.userId and u.userId =:userId", nativeQuery = true)
-    List<Tasks> findAllTasksOrderByUpdatedAtDesc(@Param("userId") long userId, Pageable pageable);
+    Page<Tasks> findAllTasksOrderByUpdatedAtDesc(@Param("userId") long userId, Pageable pageable);
 
     @Query(value = "Select t.* from TASKS t where t.status in (:statuses) and t.dead_Line < :deadline and t.reminder_Enabled = true", nativeQuery = true)
     List<Tasks> findTasksByStatusAndDeadLine(@Param("statuses") List<String> taskStatusList,@Param("deadline") LocalDateTime date);
