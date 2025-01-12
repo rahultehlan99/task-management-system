@@ -51,7 +51,7 @@ public class TaskManagementServiceImpl implements TaskManagementService {
         createdTasks.setUsers(userForNewTask());
         createdTasks = tasksRepository.save(createdTasks);
         log.info("New task saved by thread : {}", Thread.currentThread().getName());
-        mailService.sendMail("Task created", "rtehlan01@gmail.com");
+        mailService.sendMail("Task created", usersRepository.findByUserName(LoggedUserInfo.getCurrentLoggedInUser()).getMailId());
         return Mappers.requestToResponseDTO(taskCreateRequestDTO, createdTasks);
     }
 
@@ -183,9 +183,10 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     @Override
     public String addComment(CommentRequestDTO commentRequestDTO) {
         Tasks tasks = getTaskById(commentRequestDTO.getTaskId());
+        Users user = usersRepository.findByUserName(LoggedUserInfo.getCurrentLoggedInUser());
         Comment comment = new Comment();
         comment.setCommentDescription(commentRequestDTO.getDescription());
-        comment.setUserId(LoggedUserInfo.getCurrentLoggedInUser());
+        comment.setUserId(user.getUserName());
         comment.setTaskId(tasks);
         tasks.addComment(comment);
         tasksRepository.save(tasks);
