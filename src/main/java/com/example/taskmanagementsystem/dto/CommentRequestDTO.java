@@ -1,13 +1,13 @@
 package com.example.taskmanagementsystem.dto;
 
-import jakarta.persistence.Transient;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class CommentRequestDTO {
-    @Transient
+    @JsonIgnore
     private String taskId;
     private String description;
 }
