@@ -8,6 +8,7 @@ import com.example.taskmanagementsystem.entity.Tasks;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,8 @@ public class Mappers {
         tasks.setTaskDescription(taskCreateRequestDTO.getTaskDescription());
         tasks.setDeadLine(taskCreateRequestDTO.getDeadline());
         tasks.setPriority(taskCreateRequestDTO.getTaskPriority());
+        tasks.setCreatedAt(LocalDateTime.now());
+        tasks.setReminderEnabled(taskCreateRequestDTO.isReminderEnabled());
         return tasks;
     }
 
@@ -43,13 +46,29 @@ public class Mappers {
 
     public static TaskInfoDTO taskEntityToTaskInfoDTO(Tasks tasks){
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+        taskInfoDTO.setTaskId(tasks.getTaskId());
         taskInfoDTO.setTaskName(tasks.getTaskName());
         taskInfoDTO.setTaskDescription(tasks.getTaskDescription());
         taskInfoDTO.setDeadline(tasks.getDeadLine());
         taskInfoDTO.setTaskPriority(tasks.getPriority());
-        taskInfoDTO.setTaskStatus(tasks.getStatus());
+        taskInfoDTO.setTaskStatus(tasks.getStatus().name());
         taskInfoDTO.setTags(tasks.getTags().stream().map(Tags::getTagName).collect(Collectors.toSet()));
         taskInfoDTO.setFiles(tasks.getFiles());
+        taskInfoDTO.setCreatedAt(tasks.getCreatedAt());
+        taskInfoDTO.setReminderEnabled(tasks.isReminderEnabled());
+        return taskInfoDTO;
+    }
+
+    public static TaskInfoDTO taskEntityToFilteredTaskInfoDTO(Tasks tasks){
+        TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+        taskInfoDTO.setTaskId(tasks.getTaskId());
+        taskInfoDTO.setTaskName(tasks.getTaskName());
+        taskInfoDTO.setTaskDescription(tasks.getTaskDescription());
+        taskInfoDTO.setDeadline(tasks.getDeadLine());
+        taskInfoDTO.setTaskPriority(tasks.getPriority());
+        taskInfoDTO.setTaskStatus(tasks.getStatus().name());
+        taskInfoDTO.setCreatedAt(tasks.getCreatedAt());
+        taskInfoDTO.setReminderEnabled(tasks.isReminderEnabled());
         return taskInfoDTO;
     }
 

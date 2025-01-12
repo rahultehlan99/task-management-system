@@ -7,7 +7,7 @@ import java.util.Base64;
 
 public class Encoder {
 
-    // basic encoder and decoder
+    // TODO : basic client encoder and decoder for content stored in S3
     public static byte[] encodeStream(Resource resource) throws IOException {
         return Base64.getEncoder().encode(resource.getContentAsByteArray());
     }

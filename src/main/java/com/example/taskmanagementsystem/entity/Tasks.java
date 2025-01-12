@@ -2,24 +2,23 @@ package com.example.taskmanagementsystem.entity;
 
 import com.example.taskmanagementsystem.enums.TaskStatus;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Data
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "TASKS")
-public class Tasks {
+public class Tasks extends AuditModel {
 
     @Id
     @UuidGenerator
@@ -27,15 +26,26 @@ public class Tasks {
 
     private String taskName;
 
+    @Column(name = "deadLine")
     private LocalDateTime deadLine;
 
     private int priority;
 
     private String taskDescription;
 
-    private List<String> files;
+    private List<String> files = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
     private TaskStatus status = TaskStatus.TODO;
+
+    private boolean reminderEnabled;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "taskId", cascade = CascadeType.ALL)
+    private List<Comment> comments = new ArrayList<>();
+
+    public void addComment(Comment comment) {
+        this.getComments().add(comment);
+    }
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -48,8 +58,7 @@ public class Tasks {
     @JoinColumn(name = "users_id", referencedColumnName = "userId")
     private Users users;
 
-    public void addTag(Tags tags){
-        getTags().add(tags);
-        tags.getTasks().add(this);
+    public void addFileToTask(String fileName) {
+        this.getFiles().add(fileName);
     }
 }
