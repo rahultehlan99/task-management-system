@@ -15,8 +15,6 @@ import com.example.taskmanagementsystem.utils.LoggedUserInfo;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -93,7 +91,6 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     }
 
     @Override
-    @Cacheable(cacheNames = "taskInfo", key = "#taskId", condition = "#taskId!=null")
     public PaginatedResponse<TaskInfoDTO> getTasks(String taskId, int pageNo, int pageSize, String sortBy, String sortingDirection) {
         String loggedUser = LoggedUserInfo.getCurrentLoggedInUser();
         log.info("Getting task info via id : {} for user : {}", taskId, loggedUser);
@@ -202,7 +199,6 @@ public class TaskManagementServiceImpl implements TaskManagementService {
     }
 
     @Override
-    @CacheEvict(cacheNames = "taskInfo", key = "#taskId")
     public String deleteTask(String taskId) {
         log.info("Request received for deleting task {}", taskId);
         Tasks task = getTaskById(taskId);
